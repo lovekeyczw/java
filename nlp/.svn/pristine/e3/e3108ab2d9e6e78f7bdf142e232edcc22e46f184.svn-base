@@ -1,0 +1,53 @@
+import java.awt.EventQueue;
+
+import javax.swing.JFrame;
+import java.awt.BorderLayout;
+import javax.swing.BoxLayout;
+import javax.swing.JTextArea;
+import javax.swing.JScrollBar;
+
+
+public class df {
+
+	private JFrame frame;
+	private final JScrollBar scrollBar = new JScrollBar();
+
+	/**
+	 * Launch the application.
+	 */
+	public static void main(String[] args) {
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					df window = new df();
+					window.frame.setVisible(true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+
+	/**
+	 * Create the application.
+	 */
+	public df() {
+		initialize();
+	}
+
+	/**
+	 * Initialize the contents of the frame.
+	 */
+	private void initialize() {
+		frame = new JFrame();
+		frame.setBounds(100, 100, 450, 300);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.getContentPane().setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.X_AXIS));
+		
+		JTextArea txtrDf = new JTextArea();
+		txtrDf.setText("df");
+		frame.getContentPane().add(txtrDf);
+		txtrDf.add(scrollBar);
+	}
+
+}

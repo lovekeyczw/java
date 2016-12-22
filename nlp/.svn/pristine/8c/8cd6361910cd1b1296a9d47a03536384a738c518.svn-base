@@ -1,0 +1,360 @@
+package com;
+
+import java.awt.event.*;
+import javax.swing.*;
+import java.awt.*;
+import java.io.*;
+
+import javax.swing.filechooser.FileFilter;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+
+class test extends JFrame {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	String name;
+	JTextArea textArea = new TextAreaMenu();
+
+	public test() {
+		setResizable(false);
+		setLocation(new Point(450, 200));
+		setSize(new Dimension(510, 500));
+		setVisible(true);
+		setIconImage(Toolkit.getDefaultToolkit().getImage(
+				"D:/JavaProject/nlp/re060323004.jpg"));
+		setTitle("汉字树库系统");
+		getContentPane().setLayout(null);
+
+		textArea.setBounds(10, 10, 480, 150);
+		JScrollPane jsp = new JScrollPane(textArea);
+		getContentPane().add(textArea);
+		add(jsp);
+		jsp.setBounds(30, 20, 450, 140);
+
+		JButton button_1 = new JButton("生成");
+		button_1.setBounds(400, 165, 80, 25);
+		getContentPane().add(button_1);
+
+		JTextArea JTextArea = new JTextArea();
+		JTextArea.setText("搜索");
+		JTextArea.setBounds(10, 165, 150, 25);
+		getContentPane().add(JTextArea);
+
+		JButton button_2 = new JButton("弹出？直接显示？");
+		button_2.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				JOptionPane.showMessageDialog(null, "依存树生成，弹出？");
+			}
+		});
+		button_2.setBounds(150, 300, 150, 25);
+		getContentPane().add(button_2);
+
+		JMenuBar menuBar = new JMenuBar();
+		setJMenuBar(menuBar);
+
+		JMenu menu = new JMenu("文件");
+		menuBar.add(menu);
+
+		JMenuItem menuItem_1 = new JMenuItem("打开");
+		menu.add(menuItem_1);
+		menuItem_1.addActionListener(new ActionListener() { // 定义"打开"组件操作
+
+					public void actionPerformed(ActionEvent arg0) {
+						chooseToOpen();
+					}
+
+				});
+
+		JMenuItem menuItem_2 = new JMenuItem("保存");
+		menu.add(menuItem_2);
+		menuItem_2.addActionListener(new ActionListener() { // 定义"打开"组件操作
+
+					public void actionPerformed(ActionEvent arg0) {
+						chooseToSave();
+					}
+
+				});
+
+		JMenuItem menuItem_3 = new JMenuItem("关闭");
+		menu.add(menuItem_3);
+		menuItem_3.addActionListener(new ActionListener() { // 定义"关闭"组件操作
+
+					@Override
+					public void actionPerformed(ActionEvent arg0) {
+						System.exit(0);
+					}
+				});
+
+		JMenu menu_1 = new JMenu("编辑");
+		menuBar.add(menu_1);
+
+		JMenuItem menuItem_6 = new JMenuItem("剪切");
+		menu_1.add(menuItem_6);
+
+		JMenuItem menuItem_4 = new JMenuItem("复制");
+		menu_1.add(menuItem_4);
+
+		JMenuItem menuItem_5 = new JMenuItem("粘贴");
+		menu_1.add(menuItem_5);
+
+		JMenuItem menuItem_7 = new JMenuItem("查找");
+		menu_1.add(menuItem_7);
+
+		JMenu menu_2 = new JMenu("帮助");
+		menuBar.add(menu_2);
+
+		JMenuItem menuItem_8 = new JMenuItem("关于");
+		menuItem_8.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JOptionPane.showMessageDialog(null, "汉字树库系统\n...\n...", "关于",
+						JOptionPane.INFORMATION_MESSAGE);
+			}
+		});
+		menu_2.add(menuItem_8);
+
+		// close
+		this.addWindowListener(new WindowAdapter() {
+			public void windowClosing(WindowEvent e) {
+				setVisible(false);
+				System.exit(0);
+			}
+		});
+	}
+
+	protected void chooseToSave() {
+
+		File file = chooseFile();
+		if (null == file)
+			return;
+		if (file.exists()) {
+			int cho = JOptionPane.showConfirmDialog(this, "文件已存在，是否覆盖？");
+			System.out.println(cho);
+			if (cho == JOptionPane.OK_OPTION)
+				save(file);
+			else
+				return;
+		} else
+			save(file);
+
+	}
+
+	private void save(File file) {
+		name = file.getName();
+		write(textArea.getText(), file.getPath());
+
+	}
+
+	protected void chooseToOpen() {
+		File file = chooseFile();
+		if (null == file || !file.exists())
+			return;
+		name = file.getName();
+		test.this.setTitle(name + " ");
+		read(textArea, file);
+	}
+
+	private File chooseFile() {
+
+		JFileChooser chooser = new JFileChooser(); // 构建文件选择器
+		chooser.setFileFilter(new FileFilter() {
+			@Override
+			public String getDescription() {
+				return "文本文件";
+			}
+
+			@Override
+			public boolean accept(File f) {
+				String name = f.getName().toLowerCase();
+
+				return f.isDirectory() || name.endsWith(".txt")
+						|| name.endsWith(".c") || name.endsWith(".java")
+						|| name.endsWith(".cpp") || name.endsWith(".xml"); // 可识别文件
+			}
+		});
+		int result = chooser.showDialog(null, "确定");
+		if (result == JFileChooser.APPROVE_OPTION) {
+			File file = chooser.getSelectedFile();
+			System.out.println(file.getAbsolutePath());
+		} else {
+			System.out.println("未选择文件");
+		}
+		return chooser.getSelectedFile();
+	}
+
+	public static void read(JTextArea text, File file) { // 定义读取文件操作
+		FileReader fr;
+		try {
+			fr = new FileReader(file);
+			BufferedReader br = new BufferedReader(fr);
+			String string = null;
+			while ((string = br.readLine()) != null) {
+				text.append(string + "\n");
+			}
+			br.close();
+			fr.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void write(String txt, String fileName) {
+		FileWriter fw;
+		try {
+			fw = new FileWriter(fileName);
+			BufferedWriter bw = new BufferedWriter(fw);
+			bw.write(txt);
+			bw.flush();
+			bw.close();
+			fw.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	class TextAreaMenu extends JTextArea implements MouseListener {
+
+		private static final long serialVersionUID = -2308615404205560110L;
+
+		private JPopupMenu pop = null; // 弹出菜单
+
+		private JMenuItem selectAll = null, copy = null, paste = null,
+				cut = null, cancel = null; // 功能菜单
+
+		public TextAreaMenu() {
+			super();
+			init();
+		}
+
+		private void init() {
+			this.addMouseListener(this);
+			this.setSelectedTextColor(Color.red);
+			pop = new JPopupMenu();
+			pop.add(selectAll = new JMenuItem("全选"));
+			pop.add(copy = new JMenuItem("复制"));
+			pop.add(paste = new JMenuItem("粘贴"));
+			pop.add(cut = new JMenuItem("剪切"));
+			pop.add(cancel = new JMenuItem("撤销"));
+			selectAll.setAccelerator(KeyStroke.getKeyStroke('A',
+					InputEvent.CTRL_MASK));
+			copy.setAccelerator(KeyStroke.getKeyStroke('C',
+					InputEvent.CTRL_MASK));
+			paste.setAccelerator(KeyStroke.getKeyStroke('V',
+					InputEvent.CTRL_MASK));
+			cut.setAccelerator(KeyStroke
+					.getKeyStroke('X', InputEvent.CTRL_MASK));
+			cancel.setAccelerator(KeyStroke.getKeyStroke('Z',
+					InputEvent.CTRL_MASK));
+			copy.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					action(e);
+				}
+			});
+			paste.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					action(e);
+				}
+			});
+			cut.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					action(e);
+				}
+			});
+			this.add(pop);
+		}
+
+		/**
+		 * 菜单动作
+		 * 
+		 * @param e
+		 */
+		public void action(ActionEvent e) {
+			String str = e.getActionCommand();
+			if (str.equals(selectAll.getText())) { // 全选
+				this.selectAll();
+			} else if (str.equals(copy.getText())) { // 复制
+				this.copy();
+			} else if (str.equals(paste.getText())) { // 粘贴
+				this.paste();
+			} else if (str.equals(cut.getText())) { // 剪切
+				this.cut();
+			} else if (str.equals(cancel.getText())) { // 撤销
+				this.cut();
+			}
+		}
+
+		public JPopupMenu getPop() {
+			return pop;
+		}
+
+		public void setPop(JPopupMenu pop) {
+			this.pop = pop;
+		}
+
+		/**
+		 * 剪切板中是否有文本数据可供粘贴
+		 * 
+		 * @return true为有文本数据
+		 */
+		public boolean isClipboardString() {
+			boolean b = false;
+			Clipboard clipboard = this.getToolkit().getSystemClipboard();
+			Transferable content = clipboard.getContents(this);
+			try {
+				if (content.getTransferData(DataFlavor.stringFlavor) instanceof String) {
+					b = true;
+				}
+			} catch (Exception e) {
+			}
+			return b;
+		}
+
+		/**
+		 * 文本组件中是否具备复制的条件
+		 * 
+		 * @return true为具备
+		 */
+		public boolean isCanCopy() {
+			boolean b = false;
+			int start = this.getSelectionStart();
+			int end = this.getSelectionEnd();
+			if (start != end)
+				b = true;
+			return b;
+		}
+
+		public void mouseClicked(MouseEvent e) {
+		}
+
+		public void mouseEntered(MouseEvent e) {
+		}
+
+		public void mouseExited(MouseEvent e) {
+		}
+
+		public void mousePressed(MouseEvent e) {
+			if (e.getButton() == MouseEvent.BUTTON3) {
+				copy.setEnabled(isCanCopy());
+				paste.setEnabled(isClipboardString());
+				cut.setEnabled(isCanCopy());
+				pop.show(this, e.getX(), e.getY());
+			}
+		}
+
+		public void mouseReleased(MouseEvent e) {
+		}
+	}
+}
+
+public class NLP {
+	public static void main(String[] args) {
+		new test();
+	}
+}
